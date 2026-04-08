@@ -1,9 +1,9 @@
 # To-Do — Features & Functions
 
 ## Authentication & Users
-- [ ] User registration and login (JWT-based)
-- [ ] Role-based access control (admin, staff, agent)
-- [ ] User profile management
+- [x] User registration and login (JWT-based)
+- [x] Role-based access control (admin, staff, agent)
+- [x] User profile management
 
 ## Tour Management
 - [ ] Create, read, update, delete (CRUD) tour packages
@@ -29,7 +29,7 @@
 - [ ] Export reports (PDF, Excel)
 
 ## Frontend UI
-- [ ] Responsive dashboard layout
+- [x] Responsive dashboard layout
 - [ ] Tour listing and detail pages
 - [ ] Booking form and management interface
 - [ ] Customer search and profile views

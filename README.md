@@ -9,6 +9,7 @@ A web application for tours and travel business management.
 | Backend        | Django (Python 3.12)    |
 | Frontend       | Vue.js 3 + Vite (Node 22) |
 | Database       | PostgreSQL 15           |
+| Auth           | JWT (djangorestframework-simplejwt) |
 | Infrastructure | Docker Compose          |
 | Tooling        | pip (Python), npm (Node) |
 
@@ -19,6 +20,9 @@ all_imprezz/
 ├── backend/            # Django REST API
 │   ├── config/         # Settings, URLs, WSGI/ASGI
 │   ├── apps/           # Feature modules (Django apps)
+│   │   └── accounts/   # Auth, User model, JWT, permissions
+│   ├── libs/           # Pure Python business logic
+│   │   └── auth/       # Roles, password validation, token utils
 │   ├── static/         # Static files
 │   ├── templates/      # Server-side templates (if any)
 │   └── tests/          # Backend tests
@@ -72,14 +76,26 @@ docker compose down
 
 ## API
 
-The backend exposes a REST API under `/api/`. Detailed endpoint documentation will be added as features are implemented.
+The backend exposes a REST API under `/api/`.
 
-| Prefix        | Description              |
-| ------------- | ------------------------ |
-| `/api/auth/`  | Authentication endpoints |
-| `/api/tours/` | Tour management          |
-| `/api/bookings/` | Booking operations    |
-| `/api/customers/` | Customer management  |
+### Authentication (`/api/accounts/`)
+
+| Endpoint | Method | Auth | Description |
+| -------- | ------ | ---- | ----------- |
+| `/api/accounts/auth/login/` | POST | No | Obtain JWT access + refresh tokens |
+| `/api/accounts/auth/refresh/` | POST | No | Refresh access token |
+| `/api/accounts/auth/logout/` | POST | Yes | Blacklist refresh token |
+| `/api/accounts/users/` | GET | Admin | List all users |
+| `/api/accounts/users/create/` | POST | Admin | Create a new user |
+| `/api/accounts/profile/` | GET, PATCH | Yes | View/update own profile |
+
+### Planned Endpoints
+
+| Prefix | Description |
+| ------ | ----------- |
+| `/api/tours/` | Tour management |
+| `/api/bookings/` | Booking operations |
+| `/api/customers/` | Customer management |
 
 ## Commands Reference
 

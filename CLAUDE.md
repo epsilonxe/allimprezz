@@ -12,6 +12,9 @@ Monorepo with Django backend, Vue.js frontend, and PostgreSQL database.
 - **`backend/`** — Django project (Python 3.12, containerized via Docker)
   - `config/` — Django settings, URLs, WSGI/ASGI entry points
   - `apps/` — Django apps (each app is a self-contained feature module)
+    - `accounts/` — Authentication, custom User model, JWT endpoints, role-based permissions
+  - `libs/` — Pure Python business logic (no Django imports)
+    - `auth/` — RoleManager, PasswordValidator, TokenPayloadBuilder
   - `tests/` — Backend test suite
 - **`frontend/`** — Vue.js SPA
   - `src/api/` — API client modules (Axios calls to Django REST endpoints)
@@ -23,10 +26,11 @@ Monorepo with Django backend, Vue.js frontend, and PostgreSQL database.
 
 ## Tech Stack
 
-- **Backend:** Django + Django REST Framework + psycopg (PostgreSQL adapter)
+- **Backend:** Django + Django REST Framework + SimpleJWT + psycopg (PostgreSQL adapter)
 - **Frontend:** Vue 3 + Vite + Pinia + Vue Router (Node 22)
 - **Database:** PostgreSQL 15
 - **Infrastructure:** Docker Compose (all services containerized)
+- **Auth:** JWT-based (djangorestframework-simplejwt), custom User model with email login, role-based access (admin/staff/agent)
 - **Python dependencies:** `requirements.txt` + pip (inside Docker)
 
 ## Commands
