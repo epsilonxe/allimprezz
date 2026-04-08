@@ -9,7 +9,7 @@ Monorepo with Django backend, Vue.js frontend, and PostgreSQL database.
 
 ## Architecture
 
-- **`backend/`** — Django project (Python 3.12, managed with `uv`)
+- **`backend/`** — Django project (Python 3.12, containerized via Docker)
   - `config/` — Django settings, URLs, WSGI/ASGI entry points
   - `apps/` — Django apps (each app is a self-contained feature module)
   - `tests/` — Backend test suite
@@ -24,52 +24,44 @@ Monorepo with Django backend, Vue.js frontend, and PostgreSQL database.
 ## Tech Stack
 
 - **Backend:** Django + Django REST Framework + psycopg (PostgreSQL adapter)
-- **Frontend:** Vue 3 + Vite + Pinia + Vue Router
-- **Database:** PostgreSQL
-- **Python tooling:** `uv` (package manager and virtualenv)
+- **Frontend:** Vue 3 + Vite + Pinia + Vue Router (Node 22)
+- **Database:** PostgreSQL 15
+- **Infrastructure:** Docker Compose (all services containerized)
+- **Python dependencies:** `requirements.txt` + pip (inside Docker)
 
 ## Commands
 
-### Backend
+### Docker Compose (primary development method)
 
 ```bash
-# Install dependencies
-cd backend && uv sync
+# Start all services (backend, frontend, database)
+docker compose up --build
 
-# Run development server
-uv run python manage.py runserver
+# Start in detached mode
+docker compose up -d
 
-# Run all backend tests
-uv run python manage.py test
+# Stop all services
+docker compose down
+
+# View logs
+docker compose logs -f backend
+docker compose logs -f frontend
+
+# Run Django management commands inside container
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py createsuperuser
+docker compose exec backend python manage.py test
 
 # Run a single test module
-uv run python manage.py test apps.<app_name>.tests
+docker compose exec backend python manage.py test apps.<app_name>.tests
 
 # Create a new Django app
-cd backend/apps && uv run python ../manage.py startapp <app_name>
+docker compose exec backend bash -c "cd apps && python ../manage.py startapp <app_name>"
 
-# Database migrations
-uv run python manage.py makemigrations
-uv run python manage.py migrate
-```
-
-### Frontend
-
-```bash
-# Install dependencies
-cd frontend && npm install
-
-# Run dev server
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests
-npm run test
-
-# Lint
-npm run lint
+# Install a new Python package
+docker compose exec backend pip install <package>
+# Then add it to backend/requirements.txt and rebuild:
+docker compose up --build backend
 ```
 
 ## Development Philosophy

@@ -36,9 +36,9 @@
 - [ ] Admin panel
 
 ## Infrastructure
-- [ ] Django project initialization with PostgreSQL connection
-- [ ] Vue.js project initialization with Vite
-- [ ] API client setup (Axios)
-- [ ] Docker Compose setup for local development
+- [x] Django project initialization with PostgreSQL connection
+- [x] Vue.js project initialization with Vite
+- [x] API client setup (Axios)
+- [x] Docker Compose setup for local development
 - [ ] CI/CD pipeline
 - [ ] Production deployment configuration

@@ -4,12 +4,13 @@ A web application for tours and travel business management.
 
 ## Tech Stack
 
-| Layer    | Technology              |
-| -------- | ----------------------- |
-| Backend  | Django (Python 3.12)    |
-| Frontend | Vue.js 3 + Vite         |
-| Database | PostgreSQL              |
-| Tooling  | uv (Python), npm (Node) |
+| Layer          | Technology              |
+| -------------- | ----------------------- |
+| Backend        | Django (Python 3.12)    |
+| Frontend       | Vue.js 3 + Vite (Node 22) |
+| Database       | PostgreSQL 15           |
+| Infrastructure | Docker Compose          |
+| Tooling        | pip (Python), npm (Node) |
 
 ## Project Structure
 
@@ -36,26 +37,37 @@ all_imprezz/
 
 ### Prerequisites
 
-- Python 3.12
-- [uv](https://docs.astral.sh/uv/) (Python package manager)
-- Node.js 18+
-- PostgreSQL 15+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
 
-### Backend Setup
+### Quick Start
+
+1. Build and start all services:
 
 ```bash
-cd backend
-uv sync                              # Install Python dependencies
-uv run python manage.py migrate      # Run database migrations
-uv run python manage.py runserver    # Start dev server at http://localhost:8000
+docker compose up --build
 ```
 
-### Frontend Setup
+2. Run migrations (first time only):
 
 ```bash
-cd frontend
-npm install          # Install Node dependencies
-npm run dev          # Start dev server at http://localhost:5173
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py createsuperuser
+```
+
+3. Open the application:
+
+| Service        | URL                          |
+| -------------- | ---------------------------- |
+| Frontend (UI)  | http://localhost:5173         |
+| Backend (API)  | http://localhost:8000         |
+| Django Admin   | http://localhost:8000/admin/  |
+
+The frontend automatically proxies `/api` requests to the backend.
+
+### Stopping
+
+```bash
+docker compose down
 ```
 
 ## API
@@ -71,26 +83,18 @@ The backend exposes a REST API under `/api/`. Detailed endpoint documentation wi
 
 ## Commands Reference
 
-### Backend
+### Docker Compose
 
 | Command | Description |
 | ------- | ----------- |
-| `uv sync` | Install/update Python dependencies |
-| `uv run python manage.py runserver` | Start development server |
-| `uv run python manage.py test` | Run all tests |
-| `uv run python manage.py test apps.<name>.tests` | Run tests for a specific app |
-| `uv run python manage.py makemigrations` | Generate migration files |
-| `uv run python manage.py migrate` | Apply migrations |
-| `uv run python manage.py createsuperuser` | Create admin user |
-
-### Frontend
-
-| Command | Description |
-| ------- | ----------- |
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run test` | Run tests |
-| `npm run lint` | Lint and fix files |
+| `docker compose up --build` | Build and start all services |
+| `docker compose up -d` | Start in detached mode |
+| `docker compose down` | Stop all services |
+| `docker compose logs -f <service>` | Follow logs (backend, frontend, db) |
+| `docker compose exec backend python manage.py test` | Run all backend tests |
+| `docker compose exec backend python manage.py migrate` | Apply migrations |
+| `docker compose exec backend python manage.py createsuperuser` | Create admin user |
+| `docker compose exec backend python manage.py makemigrations` | Generate migration files |
 
 ## License
 
