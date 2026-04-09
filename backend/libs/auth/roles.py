@@ -1,12 +1,16 @@
 class RoleManager:
+    SUPERUSER = 'superuser'
     ADMIN = 'admin'
     STAFF = 'staff'
     AGENT = 'agent'
 
-    VALID_ROLES = (ADMIN, STAFF, AGENT)
+    VALID_ROLES = (SUPERUSER, ADMIN, STAFF, AGENT)
+    MANAGEABLE_ROLES = (ADMIN, STAFF, AGENT)
     CHOICES = [(role, role.capitalize()) for role in VALID_ROLES]
+    MANAGEABLE_CHOICES = [(role, role.capitalize()) for role in MANAGEABLE_ROLES]
 
     _HIERARCHY = {
+        SUPERUSER: 3,
         ADMIN: 2,
         STAFF: 1,
         AGENT: 0,

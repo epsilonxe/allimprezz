@@ -26,14 +26,14 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <h1>All Imprezz</h1>
-      <p class="subtitle">Sign in to your account</p>
+  <div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow w-full max-w-sm">
+      <h1 class="text-2xl font-bold text-center mb-1">All Imprezz</h1>
+      <p class="text-center text-gray-500 mb-6">Sign in to your account</p>
 
       <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <label for="email">Email</label>
+        <div class="mb-4">
+          <label for="email" class="block mb-1 font-medium text-sm">Email</label>
           <input
             id="email"
             v-model="email"
@@ -41,11 +41,12 @@ async function handleLogin() {
             placeholder="you@example.com"
             required
             autocomplete="email"
+            class="w-full px-3 py-2 border border-gray-300 rounded text-base box-border focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
           />
         </div>
 
-        <div class="form-group">
-          <label for="password">Password</label>
+        <div class="mb-4">
+          <label for="password" class="block mb-1 font-medium text-sm">Password</label>
           <input
             id="password"
             v-model="password"
@@ -53,99 +54,20 @@ async function handleLogin() {
             placeholder="Password"
             required
             autocomplete="current-password"
+            class="w-full px-3 py-2 border border-gray-300 rounded text-base box-border focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
           />
         </div>
 
-        <p v-if="error" class="error">{{ error }}</p>
+        <p v-if="error" class="text-red-600 text-sm my-2">{{ error }}</p>
 
-        <button type="submit" :disabled="loading">
+        <button
+          type="submit"
+          :disabled="loading"
+          class="w-full py-2.5 bg-blue-500 text-white rounded text-base cursor-pointer mt-2 hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {{ loading ? 'Signing in...' : 'Sign in' }}
         </button>
       </form>
     </div>
   </div>
 </template>
-
-<style scoped>
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.login-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-}
-
-h1 {
-  margin: 0 0 0.25rem;
-  font-size: 1.5rem;
-  text-align: center;
-}
-
-.subtitle {
-  text-align: center;
-  color: #666;
-  margin-bottom: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 500;
-  font-size: 0.875rem;
-}
-
-input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-input:focus {
-  outline: none;
-  border-color: #4a90d9;
-  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
-}
-
-button {
-  width: 100%;
-  padding: 0.625rem;
-  background-color: #4a90d9;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
-
-button:hover:not(:disabled) {
-  background-color: #357abd;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.error {
-  color: #d32f2f;
-  font-size: 0.875rem;
-  margin: 0.5rem 0;
-}
-</style>

@@ -14,6 +14,30 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('@/views/ProfileView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/users',
+    name: 'user-list',
+    component: () => import('@/views/UserListView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/admin/users/create',
+    name: 'user-create',
+    component: () => import('@/views/UserCreateView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/admin/users/:id',
+    name: 'user-detail',
+    component: () => import('@/views/UserDetailView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
     path: '/',
     redirect: '/dashboard',
   },
@@ -24,7 +48,7 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const isAuthenticated = !!localStorage.getItem('access_token')
 
   if (to.meta.requiresAuth && !isAuthenticated) {
@@ -32,6 +56,17 @@ router.beforeEach((to) => {
   }
   if (to.name === 'login' && isAuthenticated) {
     return { name: 'dashboard' }
+  }
+
+  if (to.meta.requiresAdmin && isAuthenticated) {
+    const { useAuthStore } = await import('@/stores/auth')
+    const authStore = useAuthStore()
+    if (!authStore.user) {
+      await authStore.fetchProfile()
+    }
+    if (!authStore.isAdmin) {
+      return { name: 'dashboard' }
+    }
   }
 })
 

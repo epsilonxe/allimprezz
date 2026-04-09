@@ -12,3 +12,9 @@ export const logoutUser = (refresh) =>
 export const getProfile = () => apiClient.get('/accounts/profile/')
 
 export const updateProfile = (data) => apiClient.patch('/accounts/profile/', data)
+
+export const changePassword = (oldPassword, newPassword) =>
+  apiClient.post('/accounts/profile/password/', {
+    old_password: oldPassword,
+    new_password: newPassword,
+  })

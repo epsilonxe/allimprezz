@@ -8,8 +8,8 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref(localStorage.getItem('refresh_token'))
 
   const isAuthenticated = computed(() => !!accessToken.value)
-  const isAdmin = computed(() => user.value?.role === 'admin')
-  const isStaff = computed(() => ['admin', 'staff'].includes(user.value?.role))
+  const isAdmin = computed(() => ['superuser', 'admin'].includes(user.value?.role))
+  const isStaff = computed(() => ['superuser', 'admin', 'staff'].includes(user.value?.role))
   const fullName = computed(() =>
     user.value ? `${user.value.first_name} ${user.value.last_name}`.trim() : '',
   )

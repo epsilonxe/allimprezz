@@ -5,7 +5,10 @@ from libs.auth.roles import RoleManager
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == RoleManager.ADMIN
+        return (
+            request.user.is_authenticated
+            and RoleManager.has_privilege(request.user.role, RoleManager.ADMIN)
+        )
 
 
 class IsStaffUser(BasePermission):

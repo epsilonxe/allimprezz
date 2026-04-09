@@ -30,7 +30,8 @@ Monorepo with Django backend, Vue.js frontend, and PostgreSQL database.
 - **Frontend:** Vue 3 + Vite + Pinia + Vue Router (Node 22)
 - **Database:** PostgreSQL 15
 - **Infrastructure:** Docker Compose (all services containerized)
-- **Auth:** JWT-based (djangorestframework-simplejwt), custom User model with email login, role-based access (admin/staff/agent)
+- **CSS:** Tailwind CSS 4 (via `@tailwindcss/vite` plugin)
+- **Auth:** JWT-based (djangorestframework-simplejwt), custom User model with email login, role-based access (superuser/admin/staff/agent)
 - **Python dependencies:** `requirements.txt` + pip (inside Docker)
 
 ## Commands

@@ -6,19 +6,32 @@ from libs.auth.token_utils import TokenPayloadBuilder
 
 class TestRoleManager(unittest.TestCase):
     def test_valid_roles(self):
+        self.assertTrue(RoleManager.is_valid('superuser'))
         self.assertTrue(RoleManager.is_valid('admin'))
         self.assertTrue(RoleManager.is_valid('staff'))
         self.assertTrue(RoleManager.is_valid('agent'))
 
     def test_invalid_role(self):
-        self.assertFalse(RoleManager.is_valid('superuser'))
+        self.assertFalse(RoleManager.is_valid('root'))
         self.assertFalse(RoleManager.is_valid(''))
 
     def test_choices_format(self):
-        self.assertEqual(len(RoleManager.CHOICES), 3)
+        self.assertEqual(len(RoleManager.CHOICES), 4)
+        self.assertIn(('superuser', 'Superuser'), RoleManager.CHOICES)
         self.assertIn(('admin', 'Admin'), RoleManager.CHOICES)
 
-    def test_admin_has_all_privileges(self):
+    def test_manageable_choices(self):
+        self.assertEqual(len(RoleManager.MANAGEABLE_CHOICES), 3)
+        self.assertNotIn(('superuser', 'Superuser'), RoleManager.MANAGEABLE_CHOICES)
+
+    def test_superuser_has_all_privileges(self):
+        self.assertTrue(RoleManager.has_privilege('superuser', 'superuser'))
+        self.assertTrue(RoleManager.has_privilege('superuser', 'admin'))
+        self.assertTrue(RoleManager.has_privilege('superuser', 'staff'))
+        self.assertTrue(RoleManager.has_privilege('superuser', 'agent'))
+
+    def test_admin_privileges(self):
+        self.assertFalse(RoleManager.has_privilege('admin', 'superuser'))
         self.assertTrue(RoleManager.has_privilege('admin', 'admin'))
         self.assertTrue(RoleManager.has_privilege('admin', 'staff'))
         self.assertTrue(RoleManager.has_privilege('admin', 'agent'))
