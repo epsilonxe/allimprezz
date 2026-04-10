@@ -1,6 +1,7 @@
 from datetime import timedelta
 from decimal import Decimal
 
+from django.db import transaction
 from rest_framework import serializers
 
 from libs.tours.cost import CostItem as CostItemLib, CostScenario, CostFeasibility
@@ -67,7 +68,7 @@ class TourCostScenarioSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'label', 'num_pax', 'num_tour_leaders',
             'markup_percent', 'selling_price_per_pax', 'notes',
-            'items', 'summary', 'created_at', 'updated_at',
+            'is_desired', 'items', 'summary', 'created_at', 'updated_at',
         ]
 
     def _to_lib(self, obj):
@@ -104,6 +105,7 @@ class TourCostScenarioWriteSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'label', 'num_pax', 'num_tour_leaders',
             'markup_percent', 'selling_price_per_pax', 'notes',
+            'is_desired',
         ]
         extra_kwargs = {
             'selling_price_per_pax': {'required': False},
@@ -114,6 +116,12 @@ class TourCostScenarioWriteSerializer(serializers.ModelSerializer):
         if value < 1:
             raise serializers.ValidationError("Number of passengers must be at least 1.")
         return value
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            if validated_data.get('is_desired') is True:
+                instance.tour.cost_scenarios.exclude(pk=instance.pk).update(is_desired=False)
+            return super().update(instance, validated_data)
 
 
 class TourExchangeRateSerializer(serializers.ModelSerializer):
@@ -181,6 +189,7 @@ class TourDetailSerializer(serializers.ModelSerializer):
         for sc in scenarios:
             lib_scenario = CostScenario(
                 num_pax=sc.num_pax,
+                label=sc.label,
                 markup_percent=sc.markup_percent,
                 selling_price_per_pax=sc.selling_price_per_pax,
                 num_tour_leaders=sc.num_tour_leaders,

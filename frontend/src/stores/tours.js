@@ -67,6 +67,11 @@ export const useToursStore = defineStore('tours', () => {
     await fetchTour(tourId)
   }
 
+  async function markDesiredScenario(tourId, scenarioId) {
+    await updateScenario(tourId, scenarioId, { is_desired: true })
+    await fetchTour(tourId)
+  }
+
   // Cost Items
   async function addCostItem(tourId, scenarioId, data) {
     const response = await createCostItem(tourId, scenarioId, data)
@@ -106,7 +111,7 @@ export const useToursStore = defineStore('tours', () => {
   return {
     tours, currentTour, loading,
     fetchTours, fetchTour, addTour, editTour, removeTour,
-    addScenario, editScenario, removeScenario,
+    addScenario, editScenario, removeScenario, markDesiredScenario,
     addCostItem, editCostItem, removeCostItem,
     addExchangeRate, editExchangeRate, removeExchangeRate,
   }

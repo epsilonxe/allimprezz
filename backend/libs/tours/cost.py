@@ -51,7 +51,7 @@ class CostScenario:
     """
 
     def __init__(self, num_pax, markup_percent=5, selling_price_per_pax=0,
-                 num_tour_leaders=0, exchange_rates=None, notes=''):
+                 num_tour_leaders=0, exchange_rates=None, notes='', label=''):
         if num_pax < 1:
             raise ValueError("num_pax must be at least 1")
         if markup_percent < 0:
@@ -60,6 +60,7 @@ class CostScenario:
             raise ValueError("selling_price_per_pax must be non-negative")
 
         self.num_pax = int(num_pax)
+        self.label = label
         self.markup_percent = Decimal(str(markup_percent))
         self.selling_price_per_pax = Decimal(str(selling_price_per_pax))
         self.num_tour_leaders = int(num_tour_leaders)
@@ -163,6 +164,7 @@ class CostScenario:
 
     def summary(self):
         return {
+            'label': self.label,
             'num_pax': self.num_pax,
             'num_tour_leaders': self.num_tour_leaders,
             'markup_percent': str(self.markup_percent),

@@ -88,6 +88,20 @@ const activeScenario = computed(() => {
   return tour.value.cost_scenarios.find(s => s.id === activeScenarioId.value) || tour.value.cost_scenarios[0]
 })
 
+const desiredScenario = computed(() => {
+  return tour.value?.cost_scenarios?.find(s => s.is_desired) || null
+})
+
+const feasibilityScenarios = computed(() => {
+  if (!feasibility.value?.scenarios) return []
+  const src = tour.value?.cost_scenarios || []
+  return feasibility.value.scenarios.map((fs, i) => ({
+    ...fs,
+    id: src[i]?.id,
+    is_desired: !!src[i]?.is_desired,
+  }))
+})
+
 const displayedItems = computed(() => {
   const items = activeScenario.value?.items || []
   const q = itemSearch.value.trim().toLowerCase()
@@ -260,6 +274,16 @@ async function removeScenario(scenarioId) {
     showMsg('Scenario deleted.')
   } catch {
     showMsg('Failed to delete scenario.', 'error')
+  }
+}
+
+async function markDesired(scenarioId) {
+  try {
+    await toursStore.markDesiredScenario(tourId, scenarioId)
+    showMsg('Marked as desired scenario.')
+  } catch (err) {
+    const detail = err?.response?.data ? JSON.stringify(err.response.data) : err?.message || 'unknown error'
+    showMsg(`Failed to mark desired scenario: ${detail}`, 'error')
   }
 }
 
@@ -445,6 +469,49 @@ onMounted(() => {
             <span class="text-gray-500 text-sm">Description</span>
             <p class="m-0 mt-1">{{ tour.description }}</p>
           </div>
+
+          <div class="mb-4 border-t border-gray-100 pt-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-amber-500">★</span>
+              <h3 class="text-sm font-semibold m-0">Desired Scenario</h3>
+            </div>
+            <p v-if="!desiredScenario" class="text-gray-400 text-sm m-0">No desired scenario selected yet.</p>
+            <div v-else class="bg-amber-50/40 border border-amber-100 rounded p-4">
+              <div class="flex items-center justify-between mb-3">
+                <span class="font-semibold">{{ desiredScenario.label || `${desiredScenario.num_pax} Pax` }}</span>
+                <span :class="['inline-block px-2 py-0.5 rounded-full text-xs', desiredScenario.summary?.is_feasible ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
+                  {{ desiredScenario.summary?.is_feasible ? 'Feasible' : 'Not feasible' }}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                <div>
+                  <span class="text-gray-500 text-xs block">Pax</span>
+                  <span class="font-medium">{{ desiredScenario.num_pax }}</span>
+                </div>
+                <div>
+                  <span class="text-gray-500 text-xs block">Cost / Pax</span>
+                  <span class="font-medium">{{ formatNumber(desiredScenario.summary?.cost_per_pax) }}</span>
+                </div>
+                <div>
+                  <span class="text-gray-500 text-xs block">Selling / Pax</span>
+                  <span class="font-medium">{{ formatNumber(desiredScenario.summary?.effective_selling_price_per_pax) }}</span>
+                </div>
+                <div>
+                  <span class="text-gray-500 text-xs block">Profit</span>
+                  <span :class="['font-medium', parseFloat(desiredScenario.summary?.total_profit) >= 0 ? 'text-green-600' : 'text-red-600']">
+                    {{ formatNumber(desiredScenario.summary?.total_profit) }}
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-500 text-xs block">Margin</span>
+                  <span :class="['font-medium', parseFloat(desiredScenario.summary?.margin_percent) >= 0 ? 'text-green-600' : 'text-red-600']">
+                    {{ desiredScenario.summary?.margin_percent }}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="flex gap-3">
             <button class="px-4 py-2 bg-blue-500 text-white border-none rounded cursor-pointer text-sm hover:bg-blue-600" @click="startEdit">Edit</button>
             <button class="px-4 py-2 bg-red-500 text-white border-none rounded cursor-pointer text-sm hover:bg-red-600" @click="showDeleteConfirm = true">Delete</button>
@@ -519,7 +586,7 @@ onMounted(() => {
               :style="activeScenarioId === scenario.id ? 'box-shadow: inset 0 -2px 0 #3b82f6; margin-bottom: -1px; padding-bottom: calc(0.625rem + 1px);' : ''"
               @click="activeScenarioId = scenario.id"
             >
-              {{ scenario.label || `${scenario.num_pax} Pax` }}
+              {{ scenario.label || `${scenario.num_pax} Pax` }}<span v-if="scenario.is_desired" class="ml-1 text-amber-500">★</span>
             </button>
             <button
               class="px-4 py-2.5 text-sm border-none cursor-pointer bg-gray-50 text-gray-400 hover:text-blue-500 hover:bg-gray-100"
@@ -812,60 +879,64 @@ onMounted(() => {
                 <thead>
                   <tr class="text-left text-xs text-gray-400 border-b border-gray-200">
                     <th class="py-3 pr-4">Metric</th>
-                    <th v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-3 pr-4 text-right">
-                      {{ s.num_pax }} Pax
+                    <th v-for="s in feasibilityScenarios" :key="s.id" class="py-3 pr-4 text-right align-bottom">
+                      <div class="flex flex-col items-end gap-1">
+                        <span>{{ s.label || `${s.num_pax} Pax` }}</span>
+                        <span v-if="s.is_desired" class="inline-block px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold">★ Desired</span>
+                        <button v-else class="inline-block px-2 py-0.5 rounded-full bg-gray-50 text-gray-500 border border-gray-200 text-[10px] cursor-pointer hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200" @click="markDesired(s.id)">☆ Mark as desired</button>
+                      </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr class="border-b border-gray-50">
                     <td class="py-2 pr-4 text-gray-600">Tour Leaders</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-2 pr-4 text-right">{{ s.num_tour_leaders }}</td>
+                    <td v-for="s in feasibilityScenarios" :key="s.id" class="py-2 pr-4 text-right">{{ s.num_tour_leaders }}</td>
                   </tr>
                   <tr class="border-b border-gray-50">
                     <td class="py-2 pr-4 text-gray-600">Markup %</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-2 pr-4 text-right">{{ s.markup_percent }}%</td>
+                    <td v-for="s in feasibilityScenarios" :key="s.id" class="py-2 pr-4 text-right">{{ s.markup_percent }}%</td>
                   </tr>
                   <tr class="border-b border-gray-50">
                     <td class="py-2 pr-4 text-gray-600">Cost / Pax</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-2 pr-4 text-right">{{ formatNumber(s.cost_per_pax) }}</td>
+                    <td v-for="s in feasibilityScenarios" :key="s.id" class="py-2 pr-4 text-right">{{ formatNumber(s.cost_per_pax) }}</td>
                   </tr>
                   <tr class="border-b border-gray-50">
                     <td class="py-2 pr-4 text-gray-600">Selling Price / Pax</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-2 pr-4 text-right">
+                    <td v-for="s in feasibilityScenarios" :key="s.id" class="py-2 pr-4 text-right">
                       {{ formatNumber(s.effective_selling_price_per_pax) }}
                       <span v-if="s.selling_price_override" class="text-orange-500 text-xs block">(override)</span>
                     </td>
                   </tr>
                   <tr class="border-b border-gray-50">
                     <td class="py-2 pr-4 text-gray-600">Total Cost</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-2 pr-4 text-right font-medium">{{ formatNumber(s.total_cost) }}</td>
+                    <td v-for="s in feasibilityScenarios" :key="s.id" class="py-2 pr-4 text-right font-medium">{{ formatNumber(s.total_cost) }}</td>
                   </tr>
                   <tr class="border-b border-gray-50">
                     <td class="py-2 pr-4 text-gray-600">Total Revenue</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-2 pr-4 text-right font-medium">{{ formatNumber(s.total_revenue) }}</td>
+                    <td v-for="s in feasibilityScenarios" :key="s.id" class="py-2 pr-4 text-right font-medium">{{ formatNumber(s.total_revenue) }}</td>
                   </tr>
                   <tr class="border-b border-gray-100 bg-gray-50">
                     <td class="py-2 pr-4 font-semibold">Profit</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" :class="['py-2 pr-4 text-right font-semibold', parseFloat(s.total_profit) >= 0 ? 'text-green-600' : 'text-red-600']">
+                    <td v-for="s in feasibilityScenarios" :key="s.id" :class="['py-2 pr-4 text-right font-semibold', parseFloat(s.total_profit) >= 0 ? 'text-green-600' : 'text-red-600']">
                       {{ formatNumber(s.total_profit) }}
                     </td>
                   </tr>
                   <tr class="border-b border-gray-100">
                     <td class="py-2 pr-4 text-gray-600">Profit / Pax</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" :class="['py-2 pr-4 text-right', parseFloat(s.profit_per_pax) >= 0 ? 'text-green-600' : 'text-red-600']">
+                    <td v-for="s in feasibilityScenarios" :key="s.id" :class="['py-2 pr-4 text-right', parseFloat(s.profit_per_pax) >= 0 ? 'text-green-600' : 'text-red-600']">
                       {{ formatNumber(s.profit_per_pax) }}
                     </td>
                   </tr>
                   <tr>
                     <td class="py-2 pr-4 text-gray-600">Margin</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" :class="['py-2 pr-4 text-right', parseFloat(s.margin_percent) >= 0 ? 'text-green-600' : 'text-red-600']">
+                    <td v-for="s in feasibilityScenarios" :key="s.id" :class="['py-2 pr-4 text-right', parseFloat(s.margin_percent) >= 0 ? 'text-green-600' : 'text-red-600']">
                       {{ s.margin_percent }}%
                     </td>
                   </tr>
                   <tr class="border-t border-gray-200">
                     <td class="py-2 pr-4 text-gray-600">Feasible</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-2 pr-4 text-right">
+                    <td v-for="s in feasibilityScenarios" :key="s.id" class="py-2 pr-4 text-right">
                       <span :class="['inline-block px-2 py-0.5 rounded-full text-xs', s.is_feasible ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
                         {{ s.is_feasible ? 'Yes' : 'No' }}
                       </span>
@@ -884,14 +955,18 @@ onMounted(() => {
                 <thead>
                   <tr class="text-left text-xs text-gray-400 border-b border-gray-200">
                     <th class="py-3 pr-4">Category</th>
-                    <th v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-3 pr-4 text-right">{{ s.num_pax }} Pax</th>
+                    <th v-for="s in feasibilityScenarios" :key="s.id" class="py-3 pr-4 text-right">{{ s.label || `${s.num_pax} Pax` }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="cat in categoryOptions" :key="cat.value" class="border-b border-gray-50">
                     <td class="py-2 pr-4 text-gray-600 capitalize">{{ cat.label }}</td>
-                    <td v-for="s in feasibility.scenarios" :key="s.num_pax" class="py-2 pr-4 text-right">
-                      {{ s.cost_breakdown[cat.value] ? formatNumber(s.cost_breakdown[cat.value]) : '-' }}
+                    <td v-for="s in feasibilityScenarios" :key="s.id" class="py-2 pr-4 text-right">
+                      <template v-if="s.cost_breakdown[cat.value]">
+                        {{ formatNumber(s.cost_breakdown[cat.value]) }}
+                        <span class="text-gray-400 text-xs block">({{ (parseFloat(s.cost_breakdown[cat.value]) / parseFloat(s.total_cost) * 100).toFixed(2) }}%)</span>
+                      </template>
+                      <template v-else>-</template>
                     </td>
                   </tr>
                 </tbody>
