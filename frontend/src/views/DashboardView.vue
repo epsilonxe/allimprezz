@@ -25,6 +25,21 @@ const authStore = useAuthStore()
       </div>
     </section>
 
+    <section class="mb-8">
+      <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Tours</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <router-link
+          to="/tours"
+          class="flex flex-col items-center gap-3 p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow no-underline text-gray-700 hover:text-blue-600"
+        >
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.92 17.92 0 0 1-8.716-2.247m0 0A8.966 8.966 0 0 1 3 12c0-1.264.26-2.467.73-3.558" />
+          </svg>
+          <span class="text-sm font-medium">Tour Manager</span>
+        </router-link>
+      </div>
+    </section>
+
     <section v-if="authStore.isAdmin">
       <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Administration</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">

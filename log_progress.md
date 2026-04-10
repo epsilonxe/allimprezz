@@ -43,5 +43,23 @@
 - Docker Compose: added PostgreSQL healthcheck, backend waits for healthy db
 - Docker Compose: switched frontend node_modules to a named volume
 
+## 2026-04-10
 
-
+- Tours / Cost Feasibility — simplified cost model:
+  - Removed `quantity` and `cost_type` (personal/shared) from `CostItem` library, `TourCostItem` Django model, serializers, and frontend
+  - Item totals are now computed as `unit_cost * scenario.num_pax`; dropped `personal_cost_total` / `shared_cost_total` from `CostScenario` summary
+  - Added migration `0005_remove_tourcostitem_cost_type_and_more`
+  - Rewrote `libs/tests/test_tours.py` to match the new model (34 tests passing)
+- Tours / Cost Feasibility — fixed synced-item bug on new scenario creation:
+  - Added `_populate_synced_items_from_siblings(scenario)` helper in `apps/tours/views.py`
+  - `ScenarioListCreateView.post` now auto-pulls all unique synced items from sibling scenarios into a freshly created scenario when no `copy_from` is supplied
+- Tours / Cost Feasibility — default scenario semantics:
+  - First scenario in a tour is auto-labelled "Default" (backend fallback + frontend pre-fill)
+  - Cost items added to the default (oldest) scenario default to `is_synced=True`; items added to other scenarios default to `is_synced=False`
+  - Frontend `addNewItem` no longer hardcodes `is_synced`; backend decides based on scenario context
+- Tours / Cost Feasibility — frontend table improvements (`TourDetailView.vue`):
+  - Removed Type and Qty columns from the cost items table
+  - Moved Currency column to sit immediately before Unit Cost
+  - Added search box (filters by name, pay_to, category, notes) and click-to-sort headers (`#`, Item, Category, Pay To, Curr, Unit Cost, Total) with asc/desc toggle and arrow indicators
+  - Added empty-state row when search yields no matches
+- Full backend test suite green (97 tests)

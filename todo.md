@@ -6,7 +6,8 @@
 - [x] User profile management
 
 ## Tour Management
-- [ ] Create, read, update, delete (CRUD) tour packages
+- [x] Create, read, update, delete (CRUD) tour packages
+- [x] Tour cost feasibility
 - [ ] Tour itinerary builder
 - [ ] Tour pricing and availability management
 - [ ] Tour categories and tags
@@ -22,6 +23,7 @@
 - [ ] Customer database (CRUD)
 - [ ] Customer booking history
 - [ ] Customer communication log
+- [ ] Loyal reward system 
 
 ## Finance & Reporting
 - [ ] Revenue and expense tracking
@@ -30,7 +32,7 @@
 
 ## Frontend UI
 - [x] Responsive dashboard layout
-- [ ] Tour listing and detail pages
+- [x] Tour listing and detail pages
 - [ ] Booking form and management interface
 - [ ] Customer search and profile views
 - [ ] Admin panel

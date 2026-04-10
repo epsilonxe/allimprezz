@@ -20,6 +20,24 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/tours',
+    name: 'tour-list',
+    component: () => import('@/views/TourListView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/tours/create',
+    name: 'tour-create',
+    component: () => import('@/views/TourCreateView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/tours/:id',
+    name: 'tour-detail',
+    component: () => import('@/views/TourDetailView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/admin/users',
     name: 'user-list',
     component: () => import('@/views/UserListView.vue'),
