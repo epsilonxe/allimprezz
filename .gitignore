@@ -29,3 +29,6 @@ media/
 
 # Docker
 postgres_data/
+
+# Local script run state (logs, pid files)
+scripts/.run/
