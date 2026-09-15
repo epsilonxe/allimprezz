@@ -201,6 +201,15 @@ Same URLs as the Docker setup:
 | Backend (API)  | http://localhost:8000         |
 | Django Admin   | http://localhost:8000/admin/  |
 
+#### LAN access
+
+`./scripts/launch-app.sh` binds the frontend to all interfaces (`--host 0.0.0.0`) and prints a `LAN:` URL if it can detect the machine's IP, so other devices on the same network can reach it. If that doesn't work:
+
+- **macOS Firewall:** the first time `python`/`node` bind a listening socket, macOS may prompt "Allow incoming connections?" — accept it. If it was previously denied, check System Settings → Network → Firewall.
+- **CORS for direct API calls:** the frontend normally talks to the backend through Vite's same-origin `/api` proxy, so this usually isn't needed. But if something calls the backend directly from a LAN browser, add that origin to `backend/.env`'s `DJANGO_CORS_ALLOWED_ORIGINS` (comma-separated) and restart the backend.
+- **Same network:** confirm the client device is on the same Wi-Fi/subnet, and that the network doesn't have client/AP isolation enabled (common on guest Wi-Fi).
+- **Right IP:** use the host machine's LAN IP (e.g. `192.168.x.x`), not `localhost`.
+
 ### Scripts
 
 `scripts/` automates the manual steps in Option B above:

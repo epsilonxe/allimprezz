@@ -44,8 +44,10 @@ echo "Starting backend..."
  echo $! >"$BACKEND_PID_FILE")
 
 # --- Start frontend ------------------------------------------------------------
+# --host 0.0.0.0 binds Vite to all interfaces (its default is localhost-only),
+# so other devices on the LAN can reach it — matches docker-compose.yml.
 echo "Starting frontend..."
-(cd "$REPO_ROOT/frontend" && npm run dev >"$FRONTEND_LOG" 2>&1 &
+(cd "$REPO_ROOT/frontend" && npm run dev -- --host 0.0.0.0 >"$FRONTEND_LOG" 2>&1 &
  echo $! >"$FRONTEND_PID_FILE")
 
 # --- Wait for both to become healthy -----------------------------------------
@@ -73,12 +75,19 @@ if [ "$READY" -ne 1 ]; then
   exit 1
 fi
 
+LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
+
 cat <<EOF
 
 App is running:
   Frontend:     http://localhost:${FRONTEND_PORT}
   Backend API:  http://localhost:${BACKEND_PORT}
   Django Admin: http://localhost:${BACKEND_PORT}/admin/
+EOF
+if [ -n "$LAN_IP" ]; then
+  echo "  LAN:          http://${LAN_IP}:${FRONTEND_PORT}"
+fi
+cat <<EOF
 
 Logs: $BACKEND_LOG, $FRONTEND_LOG
 Stop with: ./scripts/terminate-app.sh
