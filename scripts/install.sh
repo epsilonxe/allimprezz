@@ -54,8 +54,14 @@ else
   if [ "$PLATFORM" = macos ]; then
     have brew || { echo "Homebrew is required to install PostgreSQL on macOS: https://brew.sh" >&2; exit 1; }
     brew install postgresql@15
-    brew services start postgresql@15
     export PATH="$(brew --prefix)/opt/postgresql@15/bin:$PATH"
+    # brew services needs a GUI login session (launchd gui/<uid> domain); it
+    # fails with "Bootstrap failed: 5" over SSH or without a console login.
+    if ! brew services start postgresql@15; then
+      echo "brew services failed (no GUI login session?); starting PostgreSQL with pg_ctl instead."
+      echo "Note: it won't auto-start on reboot; re-run this script or pg_ctl start after a restart."
+      pg_ctl -D "$(brew --prefix)/var/postgresql@15" -l "$(brew --prefix)/var/log/postgresql@15.log" start
+    fi
     echo "Note: postgresql@15 is keg-only. Add this to your shell profile to use psql/createdb directly:"
     echo "  export PATH=\"$(brew --prefix)/opt/postgresql@15/bin:\$PATH\""
   else
