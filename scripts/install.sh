@@ -121,6 +121,8 @@ pg_admin psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U postgres -c "ALTER USER
 # --- 5. Backend --------------------------------------------------------------
 echo "Installing backend dependencies (uv sync)..."
 (cd "$REPO_ROOT/backend" && uv sync)
+# Empty dirs aren't tracked by git; Django warns (staticfiles.W004) if it's missing.
+mkdir -p "$REPO_ROOT/backend/static"
 if [ -f "$REPO_ROOT/backend/.env" ]; then
   echo "backend/.env already exists, leaving it as-is"
 else

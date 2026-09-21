@@ -222,6 +222,58 @@ Same URLs as the Docker setup:
 
 Logs and PID files are written to `scripts/.run/` (gitignored). After `install.sh`, run `uv run python manage.py createsuperuser` from `backend/` once to create an admin user before logging into `/admin/`.
 
+## Database Backup & Restore
+
+Use `pg_dump`/`pg_restore` (logical backups) rather than copying the data directory while the server is running. The database is `all_imprezz`, role `postgres` (see `backend/.env`).
+
+### Where the data lives
+
+| Setup | Location |
+| ----- | -------- |
+| Docker Compose | `postgres_data` named volume (mounted at `/var/lib/postgresql/data` in the `db` container) |
+| macOS (Homebrew) | `/opt/homebrew/var/postgresql@15` (Intel: `/usr/local/var/postgresql@15`) |
+| Linux (apt) | `/var/lib/postgresql/15/main` |
+
+Run `psql -U postgres -c "SHOW data_directory;"` to confirm on a native install.
+
+### Backup
+
+Custom format (compressed, recommended):
+
+```bash
+# Native
+pg_dump -h localhost -U postgres -Fc all_imprezz > all_imprezz_$(date +%F).dump
+
+# Docker Compose
+docker compose exec -T db pg_dump -U postgres -Fc all_imprezz > all_imprezz_$(date +%F).dump
+```
+
+On Linux with peer auth, prefix native commands with `sudo -u postgres` (and write the file somewhere that user can access, e.g. `/tmp`).
+
+### Restore
+
+Stop the backend first so nothing is connected, then drop and recreate the database:
+
+```bash
+# Native
+dropdb -h localhost -U postgres --if-exists all_imprezz
+createdb -h localhost -U postgres all_imprezz
+pg_restore -h localhost -U postgres -d all_imprezz --no-owner all_imprezz_2026-01-01.dump
+
+# Docker Compose
+docker compose exec -T db dropdb -U postgres --if-exists all_imprezz
+docker compose exec -T db createdb -U postgres all_imprezz
+docker compose exec -T db pg_restore -U postgres -d all_imprezz --no-owner < all_imprezz_2026-01-01.dump
+```
+
+> Restoring **replaces all current data**. Take a fresh backup first if unsure. After restoring onto a newer code version, run `python manage.py migrate` (`uv run` natively, `docker compose exec backend` in Docker).
+
+Plain SQL dumps (`pg_dump ... > file.sql`) restore with `psql -U postgres -d all_imprezz -f file.sql` instead of `pg_restore`.
+
+### Moving to another machine
+
+Back up on the source, copy the `.dump` file across (e.g. `scp`), then restore on the target after `./scripts/install.sh` has created the empty `all_imprezz` database (use `--clean --if-exists` with `pg_restore` instead of dropping it manually).
+
 ## API
 
 The backend exposes a REST API under `/api/`.
