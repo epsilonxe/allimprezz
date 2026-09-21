@@ -60,7 +60,23 @@ else
     if ! brew services start postgresql@15; then
       echo "brew services failed (no GUI login session?); starting PostgreSQL with pg_ctl instead."
       echo "Note: it won't auto-start on reboot; re-run this script or pg_ctl start after a restart."
-      pg_ctl -D "$(brew --prefix)/var/postgresql@15" -l "$(brew --prefix)/var/log/postgresql@15.log" start
+      PGDATA="$(brew --prefix)/var/postgresql@15"
+      PGLOG="$(brew --prefix)/var/log/postgresql@15.log"
+      mkdir -p "$(dirname "$PGLOG")"
+      if [ ! -f "$PGDATA/PG_VERSION" ]; then
+        echo "Initialising PostgreSQL data directory..."
+        initdb --locale=C -E UTF-8 "$PGDATA"
+      fi
+      # A leftover postmaster.pid from a crashed/aborted start blocks pg_ctl.
+      if [ -f "$PGDATA/postmaster.pid" ] && ! pg_ctl -D "$PGDATA" status >/dev/null 2>&1; then
+        echo "Removing stale postmaster.pid"
+        rm -f "$PGDATA/postmaster.pid"
+      fi
+      if ! pg_ctl -D "$PGDATA" -l "$PGLOG" -w start; then
+        echo "Could not start PostgreSQL. Last lines of $PGLOG:" >&2
+        tail -20 "$PGLOG" >&2 || true
+        exit 1
+      fi
     fi
     echo "Note: postgresql@15 is keg-only. Add this to your shell profile to use psql/createdb directly:"
     echo "  export PATH=\"$(brew --prefix)/opt/postgresql@15/bin:\$PATH\""
